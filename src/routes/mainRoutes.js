@@ -3,6 +3,7 @@ const express = require('express');
 const MongoClient = require('mongodb').MongoClient;
 const dburl = 'mongodb+srv://ali:ali123@cluster0-mcnq9.mongodb.net/test?retryWrites=true';
 const dbName = 'myClassDaysDB';
+const bcrypt = require('bcrypt');
 
 const router = express.Router();
 // support parsing of application/json type post data
@@ -11,6 +12,9 @@ router.use(express.json());
 //support parsing of application/x-www-form-urlencoded post data
 router.use(express.urlencoded({ extended: true }));
 router.route('/').get((req, res) => {
+    res.render('index');
+});
+router.route('/index').get((req, res) => {
     res.render('index');
 });
 router.route('/register').get((req, res) => {
@@ -23,9 +27,11 @@ router.route('/register').post((req, res) => {
     if (req.body.pass != req.body.pass2) {
         res.render('register', { message: 'your passes donont match' });
     } else {
+        let hash = bcrypt.hashSync(pass, 10);
+console.log('as is' + hash);
         var user = {
             email: email,
-            pass: pass
+            pass: hash
         };
         (async function mongo() {
             let client;
@@ -58,6 +64,26 @@ router.route('/register').post((req, res) => {
 router.route('/about').get((req, res) => {
 
     res.render('about', {});
+});
+router.route('/login').get((req, res) => {
+
+    res.render('login', {});
+});
+router.route('/about/subpage').get((req, res) => {
+
+    res.render('subpage', {});
+});
+router.route('/blog').get((req, res) => {
+
+    res.render('blog', {});
+});
+router.route('/contact').get((req, res) => {
+
+    res.render('contact', {});
+});
+router.route('/listings').get((req, res) => {
+
+    res.render('listings', {});
 });
 
 module.exports = router;
