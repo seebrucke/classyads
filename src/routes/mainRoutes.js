@@ -8,9 +8,11 @@ const bcrypt = require('bcrypt');
 const router = express.Router();
 // support parsing of application/json type post data
 router.use(express.json());
-
+const session = require('express-session');
+router.use(session({secret: 'ssshhhhh',saveUninitialized: true,resave: true}));
 //support parsing of application/x-www-form-urlencoded post data
-router.use(express.urlencoded({ extended: true }));
+router.use(express.urlencoded({ extended: false }));
+var sess;
 router.route('/').get((req, res) => {
     res.render('index');
 });
@@ -21,15 +23,17 @@ router.route('/register').get((req, res) => {
     res.render('register', { message: '' });
 });
 router.route('/register').post((req, res) => {
-    console.log(req.body.email);
-    var email = req.body.email;
-    var pass = req.body.pass;
+    sess = req.session;
+    //sess.email = req.body.email;
+console.log(sess.eamil);
+
+    let email = req.body.email;
+    let pass = req.body.pass;
     if (req.body.pass != req.body.pass2) {
         res.render('register', { message: 'your passes donont match' });
     } else {
         let hash = bcrypt.hashSync(pass, 10);
-console.log('as is' + hash);
-        var user = {
+        let user = {
             email: email,
             pass: hash
         };
@@ -38,16 +42,13 @@ console.log('as is' + hash);
             try {
                 client = await MongoClient.connect(dburl, { useNewUrlParser: true });
                 const db = client.db(dbName);
-                console.log(user.email);
-
                 let validity = await db.collection('users').findOne({email:user.email});
-                console.log(validity);
                 if (!validity) {
                     const response = await db.collection('users').insertOne(user);
-                    res.render('register',{message:'you are singed up!'});
+                    res.render('register',{message:'ok'});
                 } else {
                     client.close();
-                    res.render('register', { message: 'there is a user with the same email' });
+                    res.render('register', { message: 'ther is a user with the same email' });
 
                 }
 
@@ -57,21 +58,54 @@ console.log('as is' + hash);
             client.close();
         }());
     }
-
-    ///  console.log(req.body.email);
-    //res.render('register',{});
 });
 router.route('/about').get((req, res) => {
 
     res.render('about', {});
 });
 router.route('/login').get((req, res) => {
-
-    res.render('login', {});
+let message = req.query.message;
+    res.render('login', {message:message});
 });
-router.route('/about/subpage').get((req, res) => {
+router.route('/admin').get((req, res) => {
+   
+});
+router.route('/admin').post((req, res) => {
+    let email = req.body.email;
+    let pass = req.body.pass;
+    let user = {
+        email: email,
+        pass: pass
+    };
+    (async function mongo() {
+        let client;
+        try {
+            client = await MongoClient.connect(dburl, { useNewUrlParser: true });
+            const db = client.db(dbName);
 
-    res.render('subpage', {});
+            let validity = await db.collection('users').findOne({email:user.email});
+            if (validity) {
+                let comparePasses = bcrypt.compareSync(user.pass,validity.pass);
+                if(comparePasses){
+                    client.close();
+                    res.render('admin',{});
+                }else{
+                let message = 'passes do not match'
+                res.redirect('login/?message='+message);                  
+                }
+                
+            } else {
+                client.close();
+                let message = 'there is no such a user'
+                res.redirect('login/?message='+message);    
+                // res.redirect('/?user=' + error);
+            }
+
+        } catch (error) {
+            res.send(error.message);
+        }
+        client.close();
+    }());
 });
 router.route('/blog').get((req, res) => {
 

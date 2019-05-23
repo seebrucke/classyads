@@ -59,14 +59,14 @@
           <div class="col-md-7 mb-5"  data-aos="fade">
 
             
-
-            <form action="#" class="p-5 bg-white">
+<h3> <%=message%></h3>
+            <form action="/admin" method='POST' class="p-5 bg-white">
              
               <div class="row form-group">
                 
                 <div class="col-md-12">
                   <label class="text-black" for="email">Email</label> 
-                  <input type="email" id="email" class="form-control">
+                  <input type="email" name='email' id="email" class="form-control">
                 </div>
               </div>
 
@@ -74,7 +74,7 @@
                 
                 <div class="col-md-12">
                   <label class="text-black" for="subject">Password</label> 
-                  <input type="password" id="subject" class="form-control">
+                  <input type="password" name='pass' id="subject" class="form-control">
                 </div>
               </div>
 
